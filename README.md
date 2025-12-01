@@ -31,7 +31,7 @@ sudo docker run \
 
 ## Querying
 
-The difference from using `bw serve` directly is that basic auth user and password has to be provided.
+The difference from using `bw serve` directly is that the basic auth user and password has to be provided.
 
 ```shell
 curl -X GET -u "basicauth_user:basicauth_pass" -H 'Content-Type: application/json' http://localhost:8080/list/object/items
