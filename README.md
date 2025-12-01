@@ -1,16 +1,19 @@
 # bw-serve-basicauth
 
 Exposes [Vault Management API](https://bitwarden.com/help/vault-management-api/), implemented by
-[bw serve](https://bitwarden.com/help/cli/) command, through Nginx reverse proxy, adding a need of
-[basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
+[bw serve](https://bitwarden.com/help/cli/) command, through
+[Nginx reverse proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/), adding a need of
+[basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication)
 to the HTTP requests. 
 
 
 ## Starting
 
 BW_SERVER_URL is optional, "https://vault.bitwarden.com" is the default.
+
 NGINX_USER and NGINX_PASSWORD is the user/password that will be expected in HTTP requests.
 When not specified, so BW_CLIENTID and BW_CLIENTSECRET will be used in their place.
+
 BW_PASSWORD is optional. When specified, the vault will be unlocked. Otherwise, it can be unlocked later, using the API.
 
 ```shell
@@ -29,7 +32,8 @@ sudo docker run \
 ## Querying
 
 The difference from using `bw serve` directly is that basic auth user and password has to be provided. I assume that
-Nginx also sanitises the requests. 
+Nginx also sanitises the requests.
+
 ```shell
 curl -X GET -u "basicauth_user:basicauth_pass" -H 'Content-Type: application/json' http://localhost:8080/list/object/items
 ```
