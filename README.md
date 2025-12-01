@@ -9,12 +9,12 @@ to the HTTP requests.
 
 ## Starting
 
-BW_SERVER_URL is optional, "https://vault.bitwarden.com" is the default.
+`BW_SERVER_URL` is optional, `https://vault.bitwarden.com` is the default.
 
-NGINX_USER and NGINX_PASSWORD is the user/password that will be expected in HTTP requests.
-When not specified, so BW_CLIENTID and BW_CLIENTSECRET will be used in their place.
+`NGINX_USER` and `NGINX_PASSWORD` is the user/password that will be expected in HTTP requests.
+When not specified, so `BW_CLIENTID` and `BW_CLIENTSECRET` will be used in their place.
 
-BW_PASSWORD is optional. When specified, the vault will be unlocked. Otherwise, it can be unlocked later, using the API.
+`BW_PASSWORD` is optional. When specified, the vault will be unlocked. Otherwise, it can be unlocked later, using the API.
 
 ```shell
 sudo docker run \
