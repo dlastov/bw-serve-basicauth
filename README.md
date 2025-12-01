@@ -26,7 +26,7 @@ sudo docker run \
 --env NGINX_PASSWORD="basicauth_pass" \
 --publish 8080:80 \
 --detach \
--it dlast0v/bw-serve-basicauth:1.0.0
+-it "dlast0v/bw-serve-basicauth:1.0.0"
 ```
 
 ## Querying
