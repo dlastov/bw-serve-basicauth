@@ -49,7 +49,7 @@ sudo docker run \
 --env NGINX_USER="basicauth_user" \
 --env NGINX_PASSWORD="basicauth_pass" \
 --publish 8080:80 \
--it dlast0v/bw-serve-basicauth:1.0.0 bash
+-it "dlast0v/bw-serve-basicauth:1.0.0" bash
 ```
 
 Then you can run e.g.
@@ -64,5 +64,5 @@ tail -f /var/log/nginx/access.log
 cd docker/bw-serve-basicauth
 sudo docker build --tag "dlast0v/bw-serve-basicauth:1.0.0" .
 sudo docker image tag "dlast0v/bw-serve-basicauth:1.0.0" "dlast0v/bw-serve-basicauth:latest"
-sudo docker push dlast0v/bw-serve-basicauth:1.0.0
+sudo docker push "dlast0v/bw-serve-basicauth:1.0.0"
 ```
