@@ -42,7 +42,8 @@ echo "BW_SERVER_URL=$BW_SERVER_URL  # Default server to connect to"
 echo "BW_CLI_RELEASE_URL=$BW_CLI_RELEASE_URL  # URL from which to download the BW CLI"
 
 install_packages
-config_bw
+# it seems more error prone to config bw only in entrypoint.sh
+#config_bw
 config_nginx
 
 echo "Finished setup"
