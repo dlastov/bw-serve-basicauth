@@ -75,7 +75,7 @@ services-start() {
 set -eu  # Fail if something is wrong
 trap 'on-fail "${LINENO}" "${BASH_COMMAND}"' ERR
 
-echo "Start entrypoint"
+echo -e "\n\nStart entrypoint"
 
 environment-check
 
