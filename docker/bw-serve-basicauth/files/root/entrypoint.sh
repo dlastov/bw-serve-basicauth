@@ -6,17 +6,6 @@ on-fail() {
   echo "Failed at ${lineno} ${bash_command}" >&2
 }
 
-# Checks if "bw serve" started vault is locked
-bw-locked() {
-  status="$(curl -X GET --silent --show-error "http://localhost:8087/status" \
-      -H "Content-Type: application/json" | jq --raw-output .data.template.status)"
-  if [ "$status" == "locked" ]; then
-    return 0
-  else
-    return 1
-  fi
-}
-
 # Starts "bw serve" in the background, login using the BW_CLIENTID and BW_CLIENTSECRET
 bw-start-bg() {
   local bw_session
@@ -45,15 +34,6 @@ bw-start-bg() {
   fi
   BW_SESSION="$bw_session" bw serve --hostname all &
   echo "started 'bw serve', PID=$!"
-  if bw-locked; then
-    echo "unlocking using BW_PASSWORD over HTTP"
-    curl -X POST --silent --show-error "http://localhost:8087/unlock" \
-      -H "Content-Type: application/json" \
-      -d '{"password":"'"${BW_PASSWORD}"'"}'
-  fi
-  if bw-locked; then
-    echo "WARNING: vault is locked!"
-  fi
 }
 
 environment-check() {
