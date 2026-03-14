@@ -6,6 +6,12 @@ on_fail() {
   echo "Failed at ${lineno} ${bash_command}" >&2
 }
 
+cleanup() {
+  echo "Shutting down..."
+  kill $(jobs -p)
+  exit 0
+}
+
 install_packages() {
   echo "Installing packages"
   apt-get -y update
@@ -36,6 +42,7 @@ config_nginx() {
 
 set -eu  # Fail if something is wrong
 trap 'on_fail "${LINENO}" "${BASH_COMMAND}"' ERR
+trap cleanup SIGINT SIGTERM
 
 echo "Start setup"
 echo "BW_SERVER_URL=$BW_SERVER_URL  # Default server to connect to"
