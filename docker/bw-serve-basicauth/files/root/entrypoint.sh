@@ -8,7 +8,7 @@ on-fail() {
 
 # Checks if "bw serve" started vault is locked
 bw-locked() {
-  status="$(curl -X GET --silent --show-error "http://localhost:80/status" \
+  status="$(curl -X GET --silent --show-error "http://localhost:8087/status" \
       -H "Content-Type: application/json" | jq --raw-output .data.template.status)"
   if [ "$status" == "locked" ]; then
     return 0
@@ -47,7 +47,7 @@ bw-start-bg() {
   echo "started 'bw serve', PID=$!"
   if bw-locked; then
     echo "unlocking using BW_PASSWORD over HTTP"
-    curl -X POST --silent --show-error "http://localhost:80/unlock" \
+    curl -X POST --silent --show-error "http://localhost:8087/unlock" \
       -H "Content-Type: application/json" \
       -d '{"password":"'"${BW_PASSWORD}"'"}'
   fi
