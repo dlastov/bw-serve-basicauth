@@ -2,10 +2,12 @@
 # healthcheck.sh
 
 # 1. Check if Nginx is responding
-curl --fail http://localhost:80/status || exit 1
+echo "Checking if Nginx is responding..."
+curl  --silent --show-error --fail http://localhost:80/status  -H "Content-Type: application/json" || exit 1
 
 # 2. Check if Bitwarden is unlocked (using your existing logic)
-STATUS="$(curl -X GET --silent "http://localhost:80/status" -H "Content-Type: application/json" | jq --raw-output .data.template.status)"
+echo "Checking if Bitwarden is unlocked..."
+STATUS="$(curl --silent --show-error --fail -X GET "http://localhost:80/status" -H "Content-Type: application/json" | jq --raw-output .data.template.status)"
 
 if [ "$STATUS" == "unlocked" ]; then
   exit 0
