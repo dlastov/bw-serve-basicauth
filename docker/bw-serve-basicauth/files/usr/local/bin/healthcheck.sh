@@ -1,0 +1,15 @@
+#!/bin/bash
+# healthcheck.sh
+
+# 1. Check if Nginx is responding
+curl --fail http://localhost:80/status || exit 1
+
+# 2. Check if Bitwarden is unlocked (using your existing logic)
+STATUS="$(curl -X GET --silent "http://localhost:80/status" -H "Content-Type: application/json" | jq --raw-output .data.template.status)"
+
+if [ "$STATUS" == "unlocked" ]; then
+  exit 0
+else
+  echo "Vault is locked or unreachable"
+  exit 1
+fi
