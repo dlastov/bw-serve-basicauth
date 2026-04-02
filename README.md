@@ -62,7 +62,7 @@ tail -f /var/log/nginx/access.log
 
 ```shell
 cd docker/bw-serve-basicauth
-tag="1.0.6"
+tag="1.1.0"
 sudo docker build --tag "dlast0v/bw-serve-basicauth:$tag" .
 sudo docker image tag "dlast0v/bw-serve-basicauth:$tag" "dlast0v/bw-serve-basicauth:latest"
 sudo docker push "dlast0v/bw-serve-basicauth:$tag"
