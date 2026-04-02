@@ -14,7 +14,7 @@ cleanup() {
   if [ -n "$PIDS" ]; then
     echo "Stopping background services (PIDs: $PIDS)..."
     kill $PIDS 2>/dev/null || true
-    sleep 1
+    wait $PIDS 2>/dev/null || true
   fi
 
   # Logout from Bitwarden to ensure a clean state for next start
@@ -30,7 +30,6 @@ cleanup() {
 
 # Starts "bw serve" in the background, login using the BW_CLIENTID and BW_CLIENTSECRET
 bw-start-bg() {
-  local bw_session=""
   echo "bw-start"
 
   # logout if there was not a clean shutdown
@@ -64,17 +63,18 @@ bw-start-bg() {
 
   if [ -v "BW_PASSWORD" ]; then
     echo "unlocking using BW_PASSWORD"
-    bw_session="$(bw unlock --passwordenv BW_PASSWORD --raw)"
-    if [ $? -eq 0 ] && [ -n "$bw_session" ]; then
+    BW_SESSION="$(bw unlock --passwordenv BW_PASSWORD --raw)"
+    if [ $? -eq 0 ] && [ -n "$BW_SESSION" ]; then
       echo "unlocked"
+      export BW_SESSION
     else
       echo "unlock failed"
-      bw_session=""
+      unset BW_SESSION
     fi
   else
     echo "no BW_PASSWORD set, unlock later using: curl -X POST -H 'Content-Type: application/json' --data '{\"password\":\"YOUR_PASSWORD\"}' http://localhost:80/unlock"
   fi
-  BW_SESSION="$bw_session" bw serve --hostname all &
+  bw serve --hostname all &
   echo "started 'bw serve', PID=$!"
 }
 
