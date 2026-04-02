@@ -18,12 +18,10 @@ cleanup() {
   fi
 
   # Logout from Bitwarden to ensure a clean state for next start
-  if command -v bw >/dev/null; then
-    # Check if we are logged in
-    if bw status | jq -e '.status != "unauthenticated"' >/dev/null 2>&1; then
-      echo "Logging out from Bitwarden..."
-      bw logout || true
-    fi
+  # Check if we are logged in
+  if bw status | jq -e '.status != "unauthenticated"' >/dev/null 2>&1; then
+    echo "Logging out from Bitwarden..."
+    bw logout || true
   fi
 
   echo "Shutdown complete."
@@ -35,9 +33,17 @@ bw-start-bg() {
   local bw_session=""
   echo "bw-start"
 
+  # logout if there was not a clean shutdown
+  if bw status | jq -e '.status != "unauthenticated"' >/dev/null 2>&1; then
+    echo "Logging out from Bitwarden..."
+    bw logout || true
+  fi
+
   if [ -v "BW_SERVER_URL" ]; then
     echo "set server to: ${BW_SERVER_URL}"
-    bw config server "${BW_SERVER_URL}"
+    # Following command might produce the error below, if it was not cleanly shutdown:
+    #   Logout required before server config update.
+    bw config server "${BW_SERVER_URL}" || true
   fi
 
   # Check current status to avoid redundant login errors
@@ -49,6 +55,7 @@ bw-start-bg() {
     if [ -v "BW_CLIENTID" ] && [ -v "BW_CLIENTSECRET" ]; then
       echo "login with clientid '${BW_CLIENTID}'"
       bw login --apikey
+      echo -e "\n"
     else
       echo "ERROR: BW_CLIENTID or BW_CLIENTSECRET variable not set" >&2
       return 2

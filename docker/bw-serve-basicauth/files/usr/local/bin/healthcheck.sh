@@ -12,6 +12,6 @@ STATUS="$(curl --silent --show-error --fail -u "$NGINX_USER:$NGINX_PASSWORD" -X 
 if [ "$STATUS" == "unlocked" ]; then
   exit 0
 else
-  echo "Vault is locked or unreachable"
+  echo "Vault is locked or unreachable (status=$STATUS)"
   exit 1
 fi
