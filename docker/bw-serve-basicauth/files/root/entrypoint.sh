@@ -6,31 +6,66 @@ on-fail() {
   echo "Failed at ${lineno} ${bash_command}" >&2
 }
 
+cleanup() {
+  echo -e "\nShutting down..."
+
+  # Terminate background processes
+  PIDS=$(jobs -p)
+  if [ -n "$PIDS" ]; then
+    echo "Stopping background services (PIDs: $PIDS)..."
+    kill $PIDS 2>/dev/null || true
+    sleep 1
+  fi
+
+  # Logout from Bitwarden to ensure a clean state for next start
+  if command -v bw >/dev/null; then
+    # Check if we are logged in
+    if bw status | jq -e '.status != "unauthenticated"' >/dev/null 2>&1; then
+      echo "Logging out from Bitwarden..."
+      bw logout || true
+    fi
+  fi
+
+  echo "Shutdown complete."
+  exit 0
+}
+
 # Starts "bw serve" in the background, login using the BW_CLIENTID and BW_CLIENTSECRET
 bw-start-bg() {
-  local bw_session
+  local bw_session=""
   echo "bw-start"
+
   if [ -v "BW_SERVER_URL" ]; then
     echo "set server to: ${BW_SERVER_URL}"
     bw config server "${BW_SERVER_URL}"
   fi
-  if [ -v "BW_CLIENTID" ] && [ -v "BW_CLIENTSECRET" ]; then
-    echo "login with clientid '${BW_CLIENTID}' with password from BW_CLIENTSECRET variable"
-    bw login --apikey
-    echo  # new line
-  else
-    echo "ERROR: BW_CLIENTID or BW_CLIENTSECRET variable not set" >&2
-    return 2
+
+  # Check current status to avoid redundant login errors
+  local status
+  status=$(bw status | jq -r .status 2>/dev/null || echo "unauthenticated")
+  echo "Current Bitwarden status: $status"
+
+  if [ "$status" == "unauthenticated" ]; then
+    if [ -v "BW_CLIENTID" ] && [ -v "BW_CLIENTSECRET" ]; then
+      echo "login with clientid '${BW_CLIENTID}'"
+      bw login --apikey
+    else
+      echo "ERROR: BW_CLIENTID or BW_CLIENTSECRET variable not set" >&2
+      return 2
+    fi
   fi
+
   if [ -v "BW_PASSWORD" ]; then
     echo "unlocking using BW_PASSWORD"
-    if bw_session="$(bw unlock --passwordenv BW_PASSWORD --raw)"; then
+    bw_session="$(bw unlock --passwordenv BW_PASSWORD --raw)"
+    if [ $? -eq 0 ] && [ -n "$bw_session" ]; then
       echo "unlocked"
     else
       echo "unlock failed"
+      bw_session=""
     fi
   else
-    echo "no BW_PASSWORD set, unlock later using something like: curl -X POST -H 'Content-Type: application/json' --data '{\"password\":\"YOUR_PASSWORD\"}'" http://localhost:8087/unlock
+    echo "no BW_PASSWORD set, unlock later using: curl -X POST -H 'Content-Type: application/json' --data '{\"password\":\"YOUR_PASSWORD\"}' http://localhost:80/unlock"
   fi
   BW_SESSION="$bw_session" bw serve --hostname all &
   echo "started 'bw serve', PID=$!"
@@ -79,6 +114,7 @@ services-start() {
 
 set -eu  # Fail if something is wrong
 trap 'on-fail "${LINENO}" "${BASH_COMMAND}"' ERR
+trap cleanup SIGTERM SIGINT
 
 echo -e "\n\nStart entrypoint"
 
@@ -88,9 +124,10 @@ if [ "$#" -eq 0 ]; then
   services-start
   wait -n -p PID
   echo "finished process $PID"
+  cleanup
 else
   echo starting CMD: "${@}"
-  "${@}"
+  exec "${@}"
 fi
 
 echo "Finished entrypoint"
