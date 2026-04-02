@@ -10,18 +10,19 @@ cleanup() {
   echo -e "\nShutting down..."
 
   # Terminate background processes
-  PIDS=$(jobs -p)
-  if [ -n "$PIDS" ]; then
+  readarray -t pids < <(jobs -p)
+  if [ "${#pids[@]}" -gt 0 ]; then
     echo "Stopping background services (PIDs: $PIDS)..."
-    kill $PIDS 2>/dev/null || true
-    wait $PIDS 2>/dev/null || true
+    kill "${pids[@]}" 2>/dev/null || true
+    wait "${pids[@]}" 2>/dev/null || true
   fi
 
   # Logout from Bitwarden to ensure a clean state for next start
   # Check if we are logged in
   if bw status | jq -e '.status != "unauthenticated"' >/dev/null 2>&1; then
     echo "Logging out from Bitwarden..."
-    bw logout || true
+    bw logout
+    echo  # bw logout above does not output a newline
   fi
 
   echo "Shutdown complete."
@@ -35,14 +36,14 @@ bw-start-bg() {
   # logout if there was not a clean shutdown
   if bw status | jq -e '.status != "unauthenticated"' >/dev/null 2>&1; then
     echo "Logging out from Bitwarden..."
-    bw logout || true
+    bw logout
   fi
 
   if [ -v "BW_SERVER_URL" ]; then
     echo "set server to: ${BW_SERVER_URL}"
     # Following command might produce the error below, if it was not cleanly shutdown:
-    #   Logout required before server config update.
-    bw config server "${BW_SERVER_URL}" || true
+    #   "Logout required before server config update."
+    bw config server "${BW_SERVER_URL}"
   fi
 
   # Check current status to avoid redundant login errors
@@ -54,11 +55,14 @@ bw-start-bg() {
     if [ -v "BW_CLIENTID" ] && [ -v "BW_CLIENTSECRET" ]; then
       echo "login with clientid '${BW_CLIENTID}'"
       bw login --apikey
-      echo -e "\n"
+      echo  # bw login above does not output a newline
     else
       echo "ERROR: BW_CLIENTID or BW_CLIENTSECRET variable not set" >&2
       return 2
     fi
+  else
+    echo "Unexpected status: $status"
+    exit 1
   fi
 
   if [ -v "BW_PASSWORD" ]; then

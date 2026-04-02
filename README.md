@@ -26,7 +26,25 @@ sudo docker run \
 --env NGINX_PASSWORD="basicauth_pass" \
 --publish 8080:80 \
 --detach \
--it "dlast0v/bw-serve-basicauth:1.0.0"
+-it "dlast0v/bw-serve-basicauth:latest"
+```
+
+## Stopping
+
+Default grace period 10s was not enough for me to properly shutdown.
+
+```shell
+docker stop --time=20 <container_id_or_name>
+```
+
+in docker-compose:
+
+```
+services:
+  bw-serve-basicauth:
+    image: dlast0v/bw-serve-basicauth:latest
+    # Increase timeout 20 seconds
+    stop_grace_period: 20s
 ```
 
 ## Querying
@@ -62,7 +80,7 @@ tail -f /var/log/nginx/access.log
 
 ```shell
 cd docker/bw-serve-basicauth
-tag="1.1.2"
+tag="1.1.3"
 sudo docker build --tag "dlast0v/bw-serve-basicauth:$tag" .
 sudo docker image tag "dlast0v/bw-serve-basicauth:$tag" "dlast0v/bw-serve-basicauth:latest"
 sudo docker push "dlast0v/bw-serve-basicauth:$tag"
